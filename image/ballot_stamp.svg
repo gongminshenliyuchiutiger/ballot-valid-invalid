@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 外圈圓環 -->
+  <circle cx="512" cy="512" r="473" stroke="#ee1d23" stroke-width="78" fill="none" />
+  <!-- 直貫上下之垂直中線 -->
+  <line x1="512" y1="39" x2="512" y2="985" stroke="#ee1d23" stroke-width="78" stroke-linecap="butt" />
+  <!-- 自中心往左下方延伸之斜線（防折疊反印不對稱設計） -->
+  <line x1="512" y1="512" x2="178" y2="846" stroke="#ee1d23" stroke-width="78" stroke-linecap="butt" />
+</svg>

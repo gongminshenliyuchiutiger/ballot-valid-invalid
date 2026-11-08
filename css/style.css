@@ -1,0 +1,2160 @@
+/**
+ * 公職人員選舉票有效與無效之認定遊戲系統
+ * 核心樣式表 - 繁體中文標準介面 & 完整響應式設計 (RWD) & 圈選印章由來專題 & 震撼視覺特效
+ */
+
+:root {
+  --primary-color: #1a56db;
+  --primary-hover: #1e429f;
+  --success-color: #059669;
+  --success-light: #d1fae5;
+  --danger-color: #dc2626;
+  --danger-light: #fee2e2;
+  --warning-color: #d97706;
+  --warning-light: #fef3c7;
+  --bg-gradient: linear-gradient(135deg, #0b1120 0%, #172554 45%, #0b1120 100%);
+  --card-bg: rgba(30, 41, 59, 0.9);
+  --panel-bg: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --stamp-red: #ee1d23;
+  --stamp-green: #2e7d32;
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "微軟正黑體", sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ========================================================
+   全螢幕震撼視覺特效層
+   ======================================================== */
+.fx-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9990;
+  opacity: 0;
+}
+
+.fx-overlay.flash-correct {
+  animation: fxFlashCorrect 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.fx-overlay.flash-wrong {
+  animation: fxFlashWrong 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes fxFlashCorrect {
+  0% {
+    opacity: 1;
+    box-shadow: inset 0 0 130px rgba(16, 185, 129, 0.8), inset 0 0 50px rgba(52, 211, 153, 0.95);
+    background: radial-gradient(circle, transparent 55%, rgba(16, 185, 129, 0.2) 100%);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: inset 0 0 30px transparent;
+    background: transparent;
+  }
+}
+
+@keyframes fxFlashWrong {
+  0% {
+    opacity: 1;
+    box-shadow: inset 0 0 150px rgba(239, 68, 68, 0.85), inset 0 0 60px rgba(248, 113, 113, 0.95);
+    background: radial-gradient(circle, transparent 45%, rgba(239, 68, 68, 0.25) 100%);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: inset 0 0 30px transparent;
+    background: transparent;
+  }
+}
+
+/* 浮動評價標籤層 */
+.floating-feedback-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9995;
+}
+
+.floating-badge {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  padding: 0.85rem 2rem;
+  border-radius: 9999px;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.floating-badge.correct {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+  border: 2px solid #34d399;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  animation: floatUpFade 0.85s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-badge.wrong {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: #fff;
+  border: 2px solid #f87171;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  animation: floatDropFade 0.85s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes floatUpFade {
+  0% { opacity: 0; transform: translate(-50%, -20%) scale(0.6); }
+  30% { opacity: 1; transform: translate(-50%, -60%) scale(1.12); }
+  75% { opacity: 1; transform: translate(-50%, -80%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -115%) scale(0.9); }
+}
+
+@keyframes floatDropFade {
+  0% { opacity: 0; transform: translate(-50%, -75%) scale(1.2); }
+  25% { opacity: 1; transform: translate(-50%, -45%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -40%) scale(0.98); }
+  100% { opacity: 0; transform: translate(-50%, -15%) scale(0.85); }
+}
+
+/* 選票卡片彈力縮放與劇烈晃動 */
+@keyframes popSuccess {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.035); box-shadow: 0 0 35px rgba(16, 185, 129, 0.6); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shakeHard {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  15%, 45%, 75% { transform: translate3d(-12px, 0, 0) rotate(-1.5deg); box-shadow: 0 0 35px rgba(239, 68, 68, 0.6); }
+  30%, 60%, 90% { transform: translate3d(12px, 0, 0) rotate(1.5deg); }
+}
+
+.ballot-card-wrapper.effect-correct {
+  animation: popSuccess 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ballot-card-wrapper.effect-wrong {
+  animation: shakeHard 0.45s ease-in-out;
+}
+
+/* ========================================================
+   頂部主導航列
+   ======================================================== */
+.navbar {
+  background: rgba(11, 17, 32, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.brand-icon {
+  font-size: 1.6rem;
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-slow 3s infinite;
+  flex-shrink: 0;
+}
+
+.brand-text h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.btn-highlight {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+}
+
+.btn-highlight:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.45);
+}
+
+/* ========================================================
+   模式分頁切換列
+   ======================================================== */
+.mode-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(11, 17, 32, 0.75);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  z-index: 90;
+}
+
+.tab-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.45);
+}
+
+/* ========================================================
+   主要內容容器
+   ======================================================== */
+.main-container {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-section {
+  display: none;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.game-section.active {
+  display: block;
+}
+
+/* ========================================================
+   模式一：審查實戰檢定
+   ======================================================== */
+.arena-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stat-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.streak-counter {
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.streak-fire {
+  color: #f97316;
+  animation: fireShake 0.4s infinite alternate ease-in-out;
+}
+
+.timer-stat-badge {
+  flex: 1;
+  min-width: 180px;
+}
+
+.timer-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin-top: 0.4rem;
+  overflow: hidden;
+}
+
+.timer-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+  transition: width 0.1s linear;
+}
+
+.ballot-stage {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.ballot-card-wrapper {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  transition: box-shadow 0.3s ease;
+}
+
+.ballot-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-pill {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.lens-tip {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ballot-view-box {
+  width: 100%;
+  max-width: 440px;
+  background: #1e1e24;
+  border: 2px solid #3f3f46;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 440px;
+}
+
+.ballot-img {
+  max-width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+  pointer-events: auto;
+}
+
+.magnifier-lens {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border: 3px solid #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  display: none;
+  background-repeat: no-repeat;
+  z-index: 50;
+  backdrop-filter: brightness(1.05);
+}
+
+.stamp-seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+  padding: 0.85rem 2rem;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  border-radius: 12px;
+  border: 5px solid;
+  opacity: 0;
+  z-index: 60;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stamp-seal.valid {
+  color: #10b981;
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.25);
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+}
+
+.stamp-seal.invalid {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.25);
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.8);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+}
+
+.stamp-seal.show {
+  transform: translate(-50%, -50%) scale(1) rotate(-12deg);
+  opacity: 1;
+}
+
+.decision-panel {
+  width: 100%;
+  display: flex;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.btn-decision {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  border-radius: 12px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-decision::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-decision:hover::before {
+  left: 100%;
+}
+
+.btn-valid {
+  background: linear-gradient(135deg, #059669, #10b981);
+  box-shadow: 0 8px 16px -2px rgba(16, 185, 129, 0.4);
+}
+
+.btn-valid:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px -2px rgba(16, 185, 129, 0.6);
+}
+
+.btn-invalid {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 8px 16px -2px rgba(239, 68, 68, 0.4);
+}
+
+.btn-invalid:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px -2px rgba(239, 68, 68, 0.6);
+}
+
+.key-hint {
+  font-size: 0.72rem;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+.analysis-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.analysis-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.65rem;
+}
+
+.analysis-header h3 {
+  font-size: 1.1rem;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.result-box {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 1rem;
+  border-left: 4px solid #94a3b8;
+  transition: all 0.3s ease;
+}
+
+.result-box.correct {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.result-box.wrong {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.result-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.result-box.correct .result-title {
+  color: #34d399;
+}
+
+.result-box.wrong .result-title {
+  color: #f87171;
+}
+
+.official-reason {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-bottom: 0.65rem;
+}
+
+.law-cite {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 0.5rem;
+}
+
+.next-action {
+  margin-top: auto;
+}
+
+.btn-next {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-next:hover {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  transform: translateY(-2px);
+}
+
+/* ========================================================
+   模式二：分類錯誤即時檢討彈窗樣式
+   ======================================================== */
+.sorter-review-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  padding: 1rem;
+}
+
+.sorter-review-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sorter-review-card {
+  background: #1e293b;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 18px;
+  max-width: 620px;
+  width: 100%;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transform: scale(0.92);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sorter-review-overlay.show .sorter-review-card {
+  transform: scale(1);
+}
+
+.sorter-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.65rem;
+}
+
+.sorter-review-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sorter-review-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.sorter-review-body {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.sorter-review-preview {
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sorter-review-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.sorter-review-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-qtitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.review-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.review-status-box {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.box-user {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.box-correct {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.review-status-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-bottom: 0.15rem;
+}
+
+.review-status-val {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.text-wrong { color: #f87171; }
+.text-correct { color: #34d399; }
+
+.review-arrow {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.review-reason-box {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  border-left: 4px solid #38bdf8;
+}
+
+.review-reason-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.review-reason-text {
+  font-size: 0.86rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+  margin-bottom: 0.35rem;
+}
+
+.review-law-text {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 0.35rem;
+}
+
+.sorter-review-footer {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .sorter-review-body {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .sorter-review-preview {
+    height: 150px;
+  }
+}
+
+/* ========================================================
+   模式二：雙箱滑動分類賽 (Drag & Drop Sorting)
+   ======================================================== */
+.sorter-arena {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: center;
+  width: 100%;
+}
+
+.sorter-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 540px;
+  background: var(--card-bg);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.bins-wrapper {
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: 1.25rem;
+  width: 100%;
+  min-height: 460px;
+  align-items: center;
+}
+
+.bin-zone {
+  height: 100%;
+  min-height: 360px;
+  border-radius: 16px;
+  border: 3px dashed rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.bin-zone.bin-valid {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.bin-zone.bin-invalid {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.bin-zone.drag-over {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.5);
+}
+
+.bin-zone.bin-valid.drag-over {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+}
+
+.bin-zone.bin-invalid.drag-over {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+}
+
+.bin-icon {
+  font-size: 2.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.bin-valid .bin-icon { color: #34d399; }
+.bin-invalid .bin-icon { color: #f87171; }
+
+.bin-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.bin-valid .bin-title { color: #34d399; }
+.bin-invalid .bin-title { color: #f87171; }
+
+.bin-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.swipe-card-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 460px;
+}
+
+.draggable-ballot {
+  width: 280px;
+  background: #18181b;
+  border: 2px solid #52525b;
+  border-radius: 14px;
+  padding: 0.85rem;
+  cursor: grab;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.draggable-ballot:active {
+  cursor: grabbing;
+  transform: scale(1.03);
+  box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.7);
+}
+
+.draggable-ballot img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.sorter-ballot-title-text {
+  display: none !important;
+}
+
+.drag-instruction {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* ========================================================
+   模式三：自訂選票模擬器（互動圈選沙盒 Sandbox）
+   ======================================================== */
+.sandbox-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 1.25rem;
+}
+
+.sandbox-toolbox {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.toolbox-title {
+  font-size: 1.05rem;
+  color: #38bdf8;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.tool-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(3px);
+}
+
+.tool-btn.active {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.tool-icon {
+  font-size: 1.15rem;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stamp-preview-icon svg {
+  display: block;
+}
+
+.tool-subtext {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  display: block;
+}
+
+.icon-red { color: #ef4444; }
+.icon-amber { color: #f59e0b; }
+.icon-rose { color: #f43f5e; }
+.icon-blue { color: #3b82f6; }
+.icon-indigo { color: #818cf8; }
+
+.toolbox-divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 0.35rem 0;
+}
+
+.btn-warning-tool { color: #f59e0b; }
+.btn-danger-tool { color: #ef4444; }
+.btn-muted-tool { color: #94a3b8; }
+
+.sandbox-canvas-wrapper {
+  background: #18181b;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ballot-paper {
+  width: 320px;
+  height: 520px;
+  background: #fdfbf7;
+  color: #1f2937;
+  border-radius: 4px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  cursor: crosshair;
+}
+
+.paper-header {
+  height: 55px;
+  border-bottom: 2px solid #374151;
+  padding: 0.4rem;
+  text-align: center;
+  position: relative;
+}
+
+.paper-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.paper-sub {
+  font-size: 0.65rem;
+  color: #4b5563;
+}
+
+.seal-spot {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border: 1px dashed #ef4444;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #ef4444;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.official-seal {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  width: 45px;
+  height: 45px;
+  border: 2px solid #b91c1c;
+  color: #b91c1c;
+  font-size: 0.55rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-3deg);
+  pointer-events: none;
+  background: rgba(254, 226, 226, 0.3);
+}
+
+.paper-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 465px;
+}
+
+.candidate-col {
+  border-right: 2px solid #374151;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.candidate-col:last-child {
+  border-right: none;
+}
+
+.stamp-target-zone {
+  height: 85px;
+  border-bottom: 2px solid #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  position: relative;
+}
+
+.candidate-no {
+  height: 45px;
+  border-bottom: 1px solid #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.candidate-photo {
+  height: 120px;
+  border-bottom: 1px solid #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  font-size: 2.2rem;
+  color: #9ca3af;
+}
+
+.candidate-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  letter-spacing: 5px;
+}
+
+.mark-element {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ballot-stamp-rendered {
+  filter: drop-shadow(0 1px 2px rgba(238, 29, 35, 0.4));
+}
+
+.ballot-stamp-rendered.folded {
+  filter: blur(0.4px);
+}
+
+.mark-private-seal {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #b91c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: bold;
+  writing-mode: vertical-rl;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.mark-fingerprint {
+  width: 38px;
+  height: 48px;
+  background: radial-gradient(ellipse at center, rgba(185, 28, 28, 0.8) 0%, rgba(185, 28, 28, 0.4) 60%, transparent 80%);
+  border-radius: 50%;
+  filter: contrast(180%);
+}
+
+.mark-pen {
+  font-size: 1.4rem;
+  color: #1e3a8a;
+  font-weight: bold;
+}
+
+.torn-corner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 50px;
+  background: #18181b;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  border-bottom: 2px dashed #ef4444;
+}
+
+.sandbox-tip {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.sandbox-judge-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sandbox-desc {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.btn-judge-now {
+  padding: 0.95rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-judge-now:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.sandbox-result-container {
+  margin-top: 0.5rem;
+}
+
+/* 多項無效票原因卡片排版 */
+.invalid-reasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.invalid-reason-item {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+}
+
+.invalid-reason-item-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+}
+
+.invalid-reason-item-desc {
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.invalid-count-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  margin-left: 0.4rem;
+}
+
+/* ========================================================
+   模式四：全圖例百科圖鑑
+   ======================================================== */
+.encyclopedia-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.search-input-box {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  gap: 0.6rem;
+  flex: 1;
+  max-width: 380px;
+  color: #94a3b8;
+}
+
+.search-input-box input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.92rem;
+  width: 100%;
+  outline: none;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.chip-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.chip-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.encyclopedia-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.15rem;
+}
+
+.ballot-card-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.ballot-card-item:hover {
+  transform: translateY(-4px);
+  border-color: #60a5fa;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+}
+
+.card-thumb-wrapper {
+  background: #18181b;
+  border-radius: 8px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-thumb-wrapper img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.card-badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-type {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.badge-type.valid {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.badge-type.invalid {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.card-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.card-summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ========================================================
+   吉祥物 LiyuChillGuy.svg 專屬樣式與互動
+   ======================================================== */
+.mascot-container {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9999;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.05s ease-out;
+}
+
+.mascot-container:active {
+  cursor: grabbing;
+}
+
+@keyframes neonRainbow {
+  0% {
+    filter: drop-shadow(0 0 10px #ff0055) drop-shadow(0 0 20px #ff0055);
+  }
+  20% {
+    filter: drop-shadow(0 0 12px #ff7700) drop-shadow(0 0 22px #ff7700);
+  }
+  40% {
+    filter: drop-shadow(0 0 14px #ffff00) drop-shadow(0 0 25px #ffff00);
+  }
+  60% {
+    filter: drop-shadow(0 0 12px #00ff66) drop-shadow(0 0 22px #00ff66);
+  }
+  80% {
+    filter: drop-shadow(0 0 14px #00ccff) drop-shadow(0 0 25px #00ccff);
+  }
+  100% {
+    filter: drop-shadow(0 0 10px #ff00cc) drop-shadow(0 0 20px #ff00cc);
+  }
+}
+
+@keyframes jitterShake {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1.08);
+  }
+  20% {
+    transform: translate(-3px, 2px) rotate(-3deg) scale(1.08);
+  }
+  40% {
+    transform: translate(3px, -2px) rotate(3deg) scale(1.08);
+  }
+  60% {
+    transform: translate(-2px, -2px) rotate(-2deg) scale(1.08);
+  }
+  80% {
+    transform: translate(2px, 3px) rotate(2deg) scale(1.08);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1.08);
+  }
+}
+
+.mascot-avatar {
+  width: 90px;
+  height: auto;
+  max-height: 120px;
+  object-fit: contain;
+  transition: filter 0.3s ease, transform 0.2s ease;
+  pointer-events: auto;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
+.mascot-container:hover .mascot-avatar {
+  animation: neonRainbow 1.2s infinite alternate linear, jitterShake 0.18s infinite linear;
+}
+
+.mascot-container.is-dragging {
+  cursor: grabbing;
+}
+
+.mascot-container.is-dragging .mascot-avatar {
+  transform: scale(1.15) rotate(6deg);
+  filter: drop-shadow(0 15px 25px rgba(56, 189, 248, 0.7)) drop-shadow(0 0 15px #38bdf8);
+}
+
+/* ========================================================
+   頁尾 (Footer)
+   ======================================================== */
+.footer {
+  background: rgba(11, 17, 32, 0.95);
+  border-top: 1px solid var(--border-color);
+  padding: 1.25rem 1rem;
+  text-align: center;
+  margin-top: auto;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fb-link {
+  color: #60a5fa;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.45rem 1.1rem;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+}
+
+.fb-link i {
+  font-size: 1.25rem;
+  color: #3b82f6;
+  transition: transform 0.25s ease;
+}
+
+.fb-link:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #60a5fa;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.fb-link:hover i {
+  transform: scale(1.15);
+  color: #60a5fa;
+}
+
+.footer-copy {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  letter-spacing: 0.8px;
+}
+
+/* ========================================================
+   圈選印章由來專題彈窗 Modal 樣式
+   ======================================================== */
+.history-modal-card {
+  max-width: 650px;
+  text-align: left;
+  padding: 1.5rem;
+}
+
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.modal-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-close-modal {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.history-content-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stamp-comparison-box {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1.2rem;
+  gap: 0.75rem;
+}
+
+.comparison-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.comparison-stamp-view {
+  width: 90px;
+  height: 90px;
+  background: #fdfbf7;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+.comparison-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  margin-bottom: 0.35rem;
+}
+
+.tag-real {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.tag-mirror {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.comparison-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.comparison-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.history-section h4 {
+  font-size: 1rem;
+  color: #f8fafc;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.history-section p {
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.history-list {
+  margin-top: 0.4rem;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.history-list li {
+  margin-bottom: 0.4rem;
+}
+
+.text-blue { color: #60a5fa; }
+.text-amber { color: #f59e0b; }
+.text-green { color: #10b981; }
+
+/* ========================================================
+   慶祝彩色紙屑 Canvas
+   ======================================================== */
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* ========================================================
+   結算彈窗 Modal
+   ======================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: #1e293b;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 1.75rem;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1);
+}
+
+.modal-badge {
+  font-size: 3.5rem;
+  color: #f59e0b;
+  margin-bottom: 0.4rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #38bdf8;
+  margin-bottom: 0.4rem;
+}
+
+.modal-grade {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #f59e0b;
+  margin: 0.4rem 0 1rem;
+  letter-spacing: 1.5px;
+}
+
+.modal-stats {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.85rem;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.modal-stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.modal-stat-val {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.val-blue { color: #38bdf8; }
+.val-green { color: #34d399; }
+.val-amber { color: #f59e0b; }
+
+/* ========================================================
+   通用動畫
+   ======================================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes fireShake {
+  0% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: rotate(6deg);
+  }
+}
+
+/* ========================================================
+   完整響應式設計 (Responsive Web Design, RWD)
+   ======================================================== */
+
+@media (max-width: 1024px) {
+  .sandbox-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sandbox-toolbox {
+    order: 2;
+  }
+
+  .sandbox-canvas-wrapper {
+    order: 1;
+  }
+
+  .sandbox-judge-panel {
+    order: 3;
+  }
+
+  .tool-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .ballot-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .bins-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    min-height: auto;
+  }
+
+  .bin-zone {
+    min-height: 120px;
+    padding: 0.85rem;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .bin-icon {
+    font-size: 2rem;
+    margin-bottom: 0;
+  }
+
+  .bin-desc {
+    display: none;
+  }
+
+  .swipe-card-area {
+    min-height: 380px;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0.6rem 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .brand-text h1 {
+    font-size: 1.05rem;
+  }
+
+  .brand-icon {
+    font-size: 1.35rem;
+  }
+
+  .nav-actions .btn-icon span {
+    display: none;
+  }
+
+  .nav-actions .btn-icon {
+    padding: 0.45rem 0.65rem;
+  }
+
+  .mode-tabs {
+    padding: 0.5rem 0.6rem;
+    gap: 0.35rem;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+  }
+
+  .main-container {
+    padding: 1rem 0.6rem 3rem;
+  }
+
+  .arena-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .timer-stat-badge {
+    grid-column: span 2;
+  }
+
+  .ballot-card-wrapper {
+    padding: 0.85rem;
+  }
+
+  .ballot-view-box {
+    min-height: 340px;
+  }
+
+  .decision-panel {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .btn-decision {
+    padding: 0.85rem;
+    font-size: 1.05rem;
+  }
+
+  .mascot-avatar {
+    width: 68px;
+  }
+
+  .mascot-container {
+    bottom: 16px;
+    left: 16px;
+  }
+
+  .tool-group {
+    grid-template-columns: 1fr;
+  }
+
+  .ballot-paper {
+    width: 290px;
+    height: 480px;
+  }
+
+  .paper-columns {
+    height: 425px;
+  }
+
+  .stamp-target-zone {
+    height: 75px;
+  }
+
+  .candidate-photo {
+    height: 105px;
+    font-size: 1.8rem;
+  }
+
+  .candidate-name {
+    font-size: 1.05rem;
+  }
+
+  .footer-copy {
+    font-size: 0.85rem;
+  }
+
+  .fb-link {
+    font-size: 0.88rem;
+    padding: 0.4rem 0.9rem;
+  }
+
+  .stamp-comparison-box {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .comparison-arrow {
+    transform: rotate(90deg);
+  }
+}

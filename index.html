@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>公職人員選舉票有效與無效之認定遊戲系統</title>
+  <!-- 引入 Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 頂部主導航列 -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-icon">
+        <i class="fa-solid fa-check-to-slot"></i>
+      </span>
+      <div class="brand-text">
+        <h1>公職人員選舉票有效與無效之認定遊戲系統</h1>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <!-- 新增：圈選印章由來介紹按鈕 -->
+      <button id="btn-stamp-history" class="btn-icon btn-highlight" title="查看圈選印章樣式之由來與設計巧思">
+        <i class="fa-solid fa-stamp"></i>
+        <span>圈選章由來</span>
+      </button>
+      <button id="btn-audio-toggle" class="btn-icon" title="切換音效開關">
+        <i class="fa-solid fa-volume-high"></i>
+        <span>音效：開</span>
+      </button>
+      <button id="btn-fullscreen" class="btn-icon" title="切換全螢幕顯示">
+        <i class="fa-solid fa-expand"></i>
+        <span>全螢幕</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 模式分頁切換列 -->
+  <nav class="mode-tabs">
+    <button class="tab-btn active" data-tab="challenge">
+      <i class="fa-solid fa-bullseye"></i>
+      <span>審查實戰檢定</span>
+    </button>
+    <button class="tab-btn" data-tab="sorter">
+      <i class="fa-solid fa-scale-balanced"></i>
+      <span>爭議票急速分類</span>
+    </button>
+    <button class="tab-btn" data-tab="sandbox">
+      <i class="fa-solid fa-palette"></i>
+      <span>自訂選票沙盒模擬</span>
+    </button>
+    <button class="tab-btn" data-tab="encyclopedia">
+      <i class="fa-solid fa-book-open"></i>
+      <span>全圖例完整圖鑑 (53例)</span>
+    </button>
+  </nav>
+
+  <!-- 主要內容區 -->
+  <main class="main-container">
+
+    <!-- ========================================================
+         模式一：審查實戰檢定
+         ======================================================== -->
+    <section id="sec-challenge" class="game-section active">
+      <div class="arena-header">
+        <div class="stat-badge">
+          <span class="stat-label">當前得分</span>
+          <span id="stat-score" class="stat-value">0</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">連續答對</span>
+          <span class="stat-value streak-counter">
+            <span id="stat-streak">0</span>
+            <i class="fa-solid fa-fire streak-fire"></i>
+          </span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-label">審查進度</span>
+          <span id="stat-progress" class="stat-value">1 / 53</span>
+        </div>
+        <div class="stat-badge timer-stat-badge">
+          <span class="stat-label">審查倒數計時</span>
+          <div class="timer-bar-container">
+            <div id="challenge-timer-bar" class="timer-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ballot-stage">
+        <!-- 左側：選票檢視與放大鏡 -->
+        <div class="ballot-card-wrapper">
+          <div class="ballot-meta">
+            <span id="challenge-ballot-cat" class="tag-pill">圈在格線與外緣邊界</span>
+            <span class="lens-tip">
+              <i class="fa-solid fa-magnifying-glass-plus"></i>
+              <span>移至選票可啟用高倍放大鏡</span>
+            </span>
+          </div>
+
+          <div id="challenge-ballot-box" class="ballot-view-box">
+            <img id="challenge-ballot-img" class="ballot-img" src="" alt="選舉票審查圖例">
+            <div id="magnifier-lens" class="magnifier-lens"></div>
+            <div id="stamp-seal" class="stamp-seal">有效票 VALID</div>
+          </div>
+
+          <!-- 判定動作按鈕 -->
+          <div class="decision-panel">
+            <button id="btn-judge-valid" class="btn-decision btn-valid">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>認定為有效票</span>
+              <span class="key-hint">按 A 或 ← 鍵</span>
+            </button>
+            <button id="btn-judge-invalid" class="btn-decision btn-invalid">
+              <i class="fa-solid fa-circle-xmark"></i>
+              <span>認定為無效票</span>
+              <span class="key-hint">按 D 或 → 鍵</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 右側：法規解析與審查報告 -->
+        <div class="analysis-panel">
+          <div class="analysis-header">
+            <h3 id="challenge-ballot-title">
+              <i class="fa-solid fa-file-shield"></i>
+              <span>有效票圖例 第（1）例</span>
+            </h3>
+          </div>
+
+          <div id="challenge-result-box" class="result-box">
+            <div id="challenge-result-title" class="result-title">待審查中...</div>
+            <div id="challenge-result-explanation" class="official-reason">
+              請仔細檢視左側選票，若有需要可使用放大鏡觀察圈選印痕、邊緣及附加印記。
+            </div>
+            <div id="challenge-result-law" class="law-cite"></div>
+          </div>
+
+          <div class="next-action">
+            <button id="btn-challenge-next" class="btn-next" style="display: none;">
+              <span>審查下一張選票</span>
+              <span class="key-hint" style="background: rgba(0,0,0,0.25);">按空白鍵 Space</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         模式二：雙箱急速分類賽
+         ======================================================== -->
+    <section id="sec-sorter" class="game-section">
+      <div class="sorter-arena">
+        <div class="sorter-stats">
+          <div class="stat-badge">
+            <span class="stat-label">分類得分</span>
+            <span id="sorter-stat-score" class="stat-value">0</span>
+          </div>
+          <div class="stat-badge">
+            <span class="stat-label">正確率</span>
+            <span id="sorter-stat-accuracy" class="stat-value">100%</span>
+          </div>
+        </div>
+
+        <div class="bins-wrapper">
+          <!-- 左箱：有效票收納箱 -->
+          <div id="bin-valid" class="bin-zone bin-valid">
+            <div class="bin-icon">
+              <i class="fa-solid fa-inbox"></i>
+            </div>
+            <div class="bin-title">有效票收納箱</div>
+            <div class="bin-desc">將卡片向左拖曳投放<br>或滑動投放</div>
+          </div>
+
+          <!-- 中央：可拖曳選票卡片 -->
+          <div class="swipe-card-area">
+            <div id="sorter-ballot-card" class="draggable-ballot">
+              <img id="sorter-ballot-img" src="" alt="拖曳選票卡片">
+            </div>
+            <div id="sorter-ballot-title" class="sorter-ballot-title-text"></div>
+            <div class="drag-instruction">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>拖向左側投有效票</span>
+              <span>•</span>
+              <span>拖向右側投無效票</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+
+          <!-- 右箱：無效票收納箱 -->
+          <div id="bin-invalid" class="bin-zone bin-invalid">
+            <div class="bin-icon">
+              <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <div class="bin-title">無效票收納箱</div>
+            <div class="bin-desc">將卡片向右拖曳投放<br>或滑動投放</div>
+          </div>
+        </div>
+
+        <!-- 模式二專用：分類錯誤即時檢討面板 -->
+        <div id="sorter-review-overlay" class="sorter-review-overlay">
+          <div class="sorter-review-card">
+            <div class="sorter-review-header">
+              <div class="sorter-review-title">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>分類錯誤！審查法規即時檢討</span>
+              </div>
+              <span class="sorter-review-badge">需要檢討</span>
+            </div>
+
+            <div class="sorter-review-body">
+              <div class="sorter-review-preview">
+                <img id="sorter-review-img" src="" alt="錯誤選票預覽">
+              </div>
+              <div class="sorter-review-details">
+                <div id="sorter-review-qtitle" class="review-qtitle">圖例名稱</div>
+                <div class="review-status-row">
+                  <div class="review-status-box box-user">
+                    <span class="review-status-label">您的判定</span>
+                    <span id="sorter-review-user" class="review-status-val text-wrong">無效票</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-right review-arrow"></i>
+                  <div class="review-status-box box-correct">
+                    <span class="review-status-label">法定正確認定</span>
+                    <span id="sorter-review-correct" class="review-status-val text-correct">有效票</span>
+                  </div>
+                </div>
+                <div class="review-reason-box">
+                  <div class="review-reason-label">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span>中選會法定認定依據與關鍵：</span>
+                  </div>
+                  <div id="sorter-review-explanation" class="review-reason-text">...</div>
+                  <div id="sorter-review-law" class="review-law-text">...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sorter-review-footer">
+              <button id="btn-sorter-continue" class="btn-decision btn-valid" style="width: 100%;">
+                <span>我充分理解錯誤原因，繼續審查</span>
+                <span class="key-hint">按空白鍵 Space</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         模式三：自訂選票沙盒模擬
+         ======================================================== -->
+    <section id="sec-sandbox" class="game-section">
+      <div class="sandbox-layout">
+        <!-- 左側工具箱 -->
+        <div class="sandbox-toolbox">
+          <div class="toolbox-title">
+            <i class="fa-solid fa-toolbox"></i>
+            <span>投票工具箱</span>
+          </div>
+
+          <div class="tool-group">
+            <button class="tool-btn active" data-tool="official_stamp">
+              <span class="tool-icon stamp-preview-icon">
+                <svg viewBox="0 0 1024 1024" width="22" height="22">
+                  <circle cx="512" cy="512" r="473" stroke="#ef4444" stroke-width="84" fill="none" />
+                  <line x1="512" y1="39" x2="512" y2="985" stroke="#ef4444" stroke-width="84" />
+                  <line x1="512" y1="512" x2="178" y2="846" stroke="#ef4444" stroke-width="84" />
+                </svg>
+              </span>
+              <div>
+                <div>選委會專用圈選章</div>
+                <small class="tool-subtext">外圓內豎、左下斜枝標準印</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="private_seal">
+              <span class="tool-icon icon-amber">
+                <i class="fa-solid fa-square-pen"></i>
+              </span>
+              <div>
+                <div>蓋私章 / 便章</div>
+                <small class="tool-subtext">選罷法第64條無效事由</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="fingerprint">
+              <span class="tool-icon icon-rose">
+                <i class="fa-solid fa-fingerprint"></i>
+              </span>
+              <div>
+                <div>捺按指印</div>
+                <small class="tool-subtext">以指紋為暗記致無效</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="pen_text">
+              <span class="tool-icon icon-blue">
+                <i class="fa-solid fa-pen-nib"></i>
+              </span>
+              <div>
+                <div>記載文字（凍蒜）</div>
+                <small class="tool-subtext">圈選後記載任何文字</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="pen_cross">
+              <span class="tool-icon icon-red">
+                <i class="fa-solid fa-xmark"></i>
+              </span>
+              <div>
+                <div>劃寫符號（打叉）</div>
+                <small class="tool-subtext">劃寫任何符號或塗改</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="smudge">
+              <span class="tool-icon icon-red">
+                <i class="fa-solid fa-droplet"></i>
+              </span>
+              <div>
+                <div>沾染微量印泥</div>
+                <small class="tool-subtext">客觀非符號指印之印泥漬</small>
+              </div>
+            </button>
+            <button class="tool-btn" data-tool="fold_mirror">
+              <span class="tool-icon icon-indigo">
+                <i class="fa-solid fa-copy"></i>
+              </span>
+              <div>
+                <div>折疊疊折反印</div>
+                <small class="tool-subtext">摺票時產生之左右鏡射淡痕</small>
+              </div>
+            </button>
+          </div>
+
+          <hr class="toolbox-divider">
+
+          <!-- 特殊狀態切換 -->
+          <button id="tool-toggle-seal" class="tool-btn btn-warning-tool">
+            <i class="fa-solid fa-landmark"></i>
+            <span>撕下選委會關防</span>
+          </button>
+          <button id="tool-toggle-torn" class="tool-btn btn-danger-tool">
+            <i class="fa-solid fa-scissors"></i>
+            <span>撕毀選票角落</span>
+          </button>
+          <button id="tool-clear-sandbox" class="tool-btn btn-muted-tool">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>清空畫布重置</span>
+          </button>
+        </div>
+
+        <!-- 中間模擬選票本體 -->
+        <div class="sandbox-canvas-wrapper">
+          <div id="sandbox-ballot-paper" class="ballot-paper">
+            <!-- 撕裂角隅 -->
+            <div id="sandbox-torn-corner" class="torn-corner" style="display: none;"></div>
+
+            <!-- 選票抬頭 -->
+            <div class="paper-header">
+              <div class="paper-title">公職人員選舉票</div>
+              <div class="paper-sub">請使用選委會製備之工具圈選</div>
+              <div class="seal-spot">關防欄</div>
+              <div id="sandbox-official-seal" class="official-seal">
+                選舉委員會<br>印信
+              </div>
+            </div>
+
+            <!-- 候選人欄位 -->
+            <div class="paper-columns">
+              <!-- 1號候選人 -->
+              <div class="candidate-col">
+                <div class="stamp-target-zone">圈選欄</div>
+                <div class="candidate-no">1</div>
+                <div class="candidate-photo">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="candidate-name">李 虞</div>
+              </div>
+              <!-- 2號候選人 -->
+              <div class="candidate-col">
+                <div class="stamp-target-zone">圈選欄</div>
+                <div class="candidate-no">2</div>
+                <div class="candidate-photo">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="candidate-name">秋 姥 琥</div>
+              </div>
+            </div>
+
+            <!-- 蓋印層 -->
+            <div id="sandbox-marks-layer"></div>
+          </div>
+          <div class="sandbox-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span>點擊選票任意位置蓋印，可自由搭配多種工具進行實驗</span>
+          </div>
+        </div>
+
+        <!-- 右側判定報告 -->
+        <div class="sandbox-judge-panel">
+          <div class="toolbox-title">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>選務主任法規即時審查</span>
+          </div>
+          <p class="sandbox-desc">
+            親手嘗試蓋在相鄰共用隔線、同時圈兩人、蓋在相片欄、或加入私章文字，點擊下方審查按鈕，系統將以法規邏輯進行即時診斷！
+          </p>
+
+          <button id="btn-sandbox-judge" class="btn-judge-now">
+            <i class="fa-solid fa-scale-unbalanced-flip"></i>
+            <span>啟動法規即時審查判定</span>
+          </button>
+
+          <div id="sandbox-result-box" class="sandbox-result-container">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">選票尚未送審，蓋印後請點擊審查按鈕。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         模式四：全圖例完整百科圖鑑
+         ======================================================== -->
+    <section id="sec-encyclopedia" class="game-section">
+      <div class="encyclopedia-toolbar">
+        <div class="search-input-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="encyclopedia-search" placeholder="搜尋圖例關鍵字（如：疊折、共用空間、私章、指印）...">
+        </div>
+
+        <div class="filter-chips">
+          <button class="chip-btn active" data-cat="all">
+            <i class="fa-solid fa-list-check"></i> 全部 (53例)
+          </button>
+          <button class="chip-btn" data-cat="valid">
+            <i class="fa-solid fa-circle-check"></i> 有效票 (28例)
+          </button>
+          <button class="chip-btn" data-cat="invalid">
+            <i class="fa-solid fa-circle-xmark"></i> 無效票 (25例)
+          </button>
+          <button class="chip-btn" data-cat="合法圈合格內">合法圈合格內</button>
+          <button class="chip-btn" data-cat="圈在格線與外緣邊界">格線與外緣邊界</button>
+          <button class="chip-btn" data-cat="圈在相鄰欄共用格線">相鄰共用格線</button>
+          <button class="chip-btn" data-cat="疊折反印與印泥殘漬">疊折反印與印泥</button>
+          <button class="chip-btn" data-cat="私章、簽名與指印">私章、簽名與指印</button>
+          <button class="chip-btn" data-cat="手寫文字與暗記符號">文字與符號</button>
+          <button class="chip-btn" data-cat="塗改抹除與撕破破損">塗改與撕損</button>
+        </div>
+      </div>
+
+      <div id="encyclopedia-grid" class="encyclopedia-grid"></div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================
+       網頁左下角吉祥物：LiyuChillGuy.svg
+       - 懸停會霓虹彩色發光抖動
+       - 可以移動到任何地方（拖曳）
+       - 下面無文字標註、無對話框
+       ======================================================== -->
+  <div id="mascot-guy" class="mascot-container" title="Liyu Chill Guy：懸停霓虹發光抖動，可拖曳移動到任何地方！">
+    <img src="image/LiyuChillGuy.svg" alt="Liyu Chill Guy 吉祥物" class="mascot-avatar" id="mascot-avatar-img">
+  </div>
+
+  <!-- ========================================================
+       頁面下方頁尾
+       - FB粉絲專頁ICON 快樂鯉魚秋老虎 (https://www.facebook.com/happyliyuchilltiger/)
+       - Copyright © Liyuchiutiger Gongminshen
+       ======================================================== -->
+  <footer class="footer">
+    <div class="footer-social">
+      <a href="https://www.facebook.com/happyliyuchilltiger/" target="_blank" rel="noopener noreferrer" class="fb-link" title="前往 Facebook 粉絲專頁：快樂鯉魚秋老虎">
+        <i class="fa-brands fa-facebook"></i>
+        <span>快樂鯉魚秋老虎</span>
+      </a>
+    </div>
+    <div class="footer-copy">
+      Copyright © Liyuchiutiger Gongminshen
+    </div>
+  </footer>
+
+  <!-- ========================================================
+       圈選印章樣式之由來與防弊設計巧思 專題彈窗 Modal
+       ======================================================== -->
+  <div id="history-modal-overlay" class="modal-overlay">
+    <div class="modal-card history-modal-card">
+      <div class="modal-header-row">
+        <div class="modal-header-title">
+          <i class="fa-solid fa-stamp" style="color: #ef4444;"></i>
+          <span>圈選印章樣式之由來與防弊設計巧思</span>
+        </div>
+        <button id="btn-close-history" class="btn-close-modal" title="關閉視窗">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="history-content-scroll">
+        <!-- 圖形對照展示 -->
+        <div class="stamp-comparison-box">
+          <div class="comparison-card">
+            <div class="comparison-stamp-view">
+              <svg viewBox="0 0 1024 1024" width="90" height="90">
+                <circle cx="512" cy="512" r="473" stroke="#ee1d23" stroke-width="78" fill="none" />
+                <line x1="512" y1="39" x2="512" y2="985" stroke="#ee1d23" stroke-width="78" />
+                <line x1="512" y1="512" x2="178" y2="846" stroke="#ee1d23" stroke-width="78" />
+              </svg>
+            </div>
+            <div class="comparison-tag tag-real">真印（投票人親圈）</div>
+            <div class="comparison-desc">斜線朝向<strong>左下方</strong><br>墨色清晰飽滿</div>
+          </div>
+
+          <div class="comparison-arrow">
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">選票對折拓印</div>
+            <i class="fa-solid fa-right-left" style="font-size: 1.5rem; color: #60a5fa;"></i>
+            <div style="font-size: 0.72rem; color: #38bdf8; margin-top: 4px;">水平鏡射翻轉</div>
+          </div>
+
+          <div class="comparison-card">
+            <div class="comparison-stamp-view">
+              <svg viewBox="0 0 1024 1024" width="90" height="90" style="opacity: 0.45;">
+                <!-- 水平翻轉 -->
+                <g transform="scale(-1, 1) translate(-1024, 0)">
+                  <circle cx="512" cy="512" r="473" stroke="#ee1d23" stroke-width="78" fill="none" />
+                  <line x1="512" y1="39" x2="512" y2="985" stroke="#ee1d23" stroke-width="78" />
+                  <line x1="512" y1="512" x2="178" y2="846" stroke="#ee1d23" stroke-width="78" />
+                </g>
+              </svg>
+            </div>
+            <div class="comparison-tag tag-mirror">折疊反印（有效票）</div>
+            <div class="comparison-desc">斜線轉向<strong>右下方</strong><br>墨色淡薄對稱鏡射</div>
+          </div>
+        </div>
+
+        <!-- 歷史與法理說明章節 -->
+        <div class="history-section">
+          <h4><i class="fa-solid fa-circle-info text-blue"></i> 專用幾何圖形真相解析（外圓、中豎、左下斜線）</h4>
+          <p>
+            坊間常有俗稱誤傳，但依中央選舉委員會法定規格，此印章<strong>絕非任何中文字</strong>，而是極具智慧的專用幾何構造：由<strong>一個外圈正圓、一條上下貫穿的垂直中線、以及一條自圓心延伸至左下圓周的斜線</strong>所組成。此圖案不具任何文字意義，以維持選務的最高中立性與純粹性。
+          </p>
+        </div>
+
+        <div class="history-section">
+          <h4><i class="fa-solid fa-history text-amber"></i> 歷史演進：告別「○」形木戳引發的廢票爭議</h4>
+          <p>
+            早期臺灣選舉曾使用完全對稱的空心圓形「○」木戳圈選。然而，選民在圈選後將選票折疊投入票匭時，未乾的紅色印泥極容易轉印到相鄰或對側候選人格內，造成「看似圈選兩人」的雙圈爭議，引發無數開票糾紛與當選無效訴訟。
+          </p>
+        </div>
+
+        <div class="history-section">
+          <h4><i class="fa-solid fa-shield-halved text-green"></i> 極致防弊巧思：「左右不對稱」光學鏡射判定法</h4>
+          <p>
+            中央選舉委員會因而特別設計了這款<strong>「左右不對稱」</strong>的專用圈選工具：
+          </p>
+          <ul class="history-list">
+            <li><strong>防疊折反印爭議：</strong>真印斜線向左下；若投票人折票時油墨轉印到他處，拓印痕跡必定產生<strong>「水平左右翻轉」</strong>，斜線變成朝向右下且顏色淡薄。選務人員在開票時僅需觀察斜線方向，瞬間即可精準確認哪一格為選民真意圈選、哪一處為折痕反印，徹底保障選民權益！</li>
+            <li><strong>防私刻與偽造：</strong>非民間常見圖章規格，選民無法自備硬幣、私章或筆跡替代，捍衛秘密投票與公正原則。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.25rem;">
+        <button id="btn-close-history-bottom" class="btn-decision btn-valid" style="width: 100%;">
+          <i class="fa-solid fa-check"></i>
+          <span>充分理解設計巧思</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結算彈窗 Modal -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-badge">
+        <i class="fa-solid fa-award"></i>
+      </div>
+      <h2 class="modal-title">審查檢定結算報告</h2>
+      <div id="modal-grade" class="modal-grade">S 級 神級選務主任委員</div>
+      <div class="modal-stats">
+        <div>
+          <div class="modal-stat-label">最終得分</div>
+          <div id="modal-score" class="modal-stat-val val-blue">0</div>
+        </div>
+        <div>
+          <div class="modal-stat-label">審查正確率</div>
+          <div id="modal-accuracy" class="modal-stat-val val-green">100%</div>
+        </div>
+        <div>
+          <div class="modal-stat-label">最高連擊</div>
+          <div id="modal-max-streak" class="modal-stat-val val-amber">0</div>
+        </div>
+      </div>
+      <button id="btn-modal-restart" class="btn-decision btn-valid" style="width: 100%;">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>重新進行檢定挑戰</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 全螢幕視覺特效光暈與浮動回饋層 -->
+  <div id="fx-overlay" class="fx-overlay"></div>
+  <div id="floating-feedback-layer" class="floating-feedback-layer"></div>
+
+  <!-- 慶祝五彩紙屑畫布 -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- 腳本引入 -->
+  <script src="data/questions.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
